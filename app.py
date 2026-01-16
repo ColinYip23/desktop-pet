@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 FRAME_DELAY = 100     # ms per frame
 SCALE = 4             # sprite size multiplier
 MARGIN = 10           # distance from screen edge
-TASKBAR_OFFSET = 40   # adjust if needed (40–60 typical)
+TASKBAR_OFFSET = 38   # adjust if needed (40–60 typical)
 
 idle_num = [1, 2, 3, 4]
 sleep_num = [10, 11, 12, 13, 15]
