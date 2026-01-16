@@ -34,10 +34,19 @@ def load_animation(tag):
     for name, data in sprite_data["frames"].items():
         if tag in name:
             f = data["frame"]
+            SCALE = 4  # try 3, 4, or 5
+
             img = sprite_sheet.crop(
                 (f["x"], f["y"], f["x"] + f["w"], f["y"] + f["h"])
             )
+
+            img = img.resize(
+                (f["w"] * SCALE, f["h"] * SCALE),
+                Image.NEAREST  # keeps pixel-art sharp
+            )
+
             frames.append(ImageTk.PhotoImage(img))
+
     return frames
 
 idle = load_animation("Idle")
@@ -112,13 +121,17 @@ def update(cycle, check, event_number, x):
         cycle, event_number = gif_work(cycle, walk, event_number, 1, 9)
         x += 3
 
-    window.geometry("100x100+500+500")
+    w = frame.width()
+    h = frame.height()
+    window.geometry(f"{w}x{h}+500+500")
+
     label.configure(image=frame)
     window.after(FRAME_DELAY, event, cycle, check, event_number, x)
 
 # ================== WINDOW ==================
-label = tk.Label(window, bg="black", bd=0)
+label = tk.Label(window, bg="magenta", bd=0)
 label.pack()
+window.wm_attributes("-transparentcolor", "magenta")
 
 window.after(100, update, cycle, check, event_number, x)
 window.mainloop()
