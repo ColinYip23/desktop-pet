@@ -14,9 +14,8 @@ walk_left = [6, 7]
 walk_right = [8, 9]
 
 event_number = random.randrange(1, 16)
-
-SPRITE_PNG = r"C:\Users\fx770\Desktop\Project\Buddy\image\Red Panda Sprite Sheet.png"
-SPRITE_JSON = r"C:\Users\fx770\Desktop\Project\Buddy\image\Red Panda Sprite Sheet.json"
+SPRITE_PNG = r"C:\Users\user\Desktop\desktop-pet\Red Panda Sprite Sheet.png"
+SPRITE_JSON = r"C:\Users\user\Desktop\desktop-pet\Red Panda Sprite Sheet.json"
 
 FRAME_DELAY = 100  # ms per frame
 
