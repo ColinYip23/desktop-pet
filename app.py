@@ -8,6 +8,10 @@ x = 1400
 cycle = 0
 check = 1
 
+window = tk.Tk()
+window.overrideredirect(True)
+window.wm_attributes("-transparentcolor", "black")
+
 idle_num = [1, 2, 3, 4]
 sleep_num = [10, 11, 12, 13, 15]
 walk_left = [6, 7]
@@ -113,10 +117,6 @@ def update(cycle, check, event_number, x):
     window.after(FRAME_DELAY, event, cycle, check, event_number, x)
 
 # ================== WINDOW ==================
-window = tk.Tk()
-window.overrideredirect(True)
-window.wm_attributes("-transparentcolor", "black")
-
 label = tk.Label(window, bg="black", bd=0)
 label.pack()
 
