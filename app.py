@@ -112,7 +112,7 @@ def update(cycle, check, event_number, x):
         cycle, event_number = gif_work(cycle, walk, event_number, 1, 9)
         x += 3
 
-    window.geometry(f"100x100+{x}+1050")
+    window.geometry("100x100+500+500")
     label.configure(image=frame)
     window.after(FRAME_DELAY, event, cycle, check, event_number, x)
 
