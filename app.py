@@ -4,13 +4,10 @@ import tkinter as tk
 from PIL import Image, ImageTk
 
 # ================== CONFIG ==================
-x = 1400
-cycle = 0
-check = 1
-
-window = tk.Tk()
-window.overrideredirect(True)
-window.wm_attributes("-transparentcolor", "black")
+FRAME_DELAY = 100     # ms per frame
+SCALE = 4             # sprite size multiplier
+MARGIN = 10           # distance from screen edge
+TASKBAR_OFFSET = 40   # adjust if needed (40–60 typical)
 
 idle_num = [1, 2, 3, 4]
 sleep_num = [10, 11, 12, 13, 15]
@@ -18,10 +15,23 @@ walk_left = [6, 7]
 walk_right = [8, 9]
 
 event_number = random.randrange(1, 16)
+cycle = 0
+check = 0
+x_offset = -15
+
 SPRITE_PNG = r"C:\Users\user\Desktop\desktop-pet\Red Panda Sprite Sheet.png"
 SPRITE_JSON = r"C:\Users\user\Desktop\desktop-pet\Red Panda Sprite Sheet.json"
 
-FRAME_DELAY = 100  # ms per frame
+# ================== WINDOW ==================
+window = tk.Tk()
+window.overrideredirect(True)
+window.wm_attributes("-transparentcolor", "magenta")
+
+label = tk.Label(window, bg="magenta", bd=0)
+label.pack()
+
+screen_width = window.winfo_screenwidth()
+screen_height = window.winfo_screenheight()
 
 # ================== LOAD SPRITES ==================
 with open(SPRITE_JSON, "r") as f:
@@ -32,9 +42,8 @@ sprite_sheet = Image.open(SPRITE_PNG).convert("RGBA")
 def load_animation(tag):
     frames = []
     for name, data in sprite_data["frames"].items():
-        if tag in name:
+        if f"({tag})" in name:
             f = data["frame"]
-            SCALE = 4  # try 3, 4, or 5
 
             img = sprite_sheet.crop(
                 (f["x"], f["y"], f["x"] + f["w"], f["y"] + f["h"])
@@ -42,7 +51,7 @@ def load_animation(tag):
 
             img = img.resize(
                 (f["w"] * SCALE, f["h"] * SCALE),
-                Image.NEAREST  # keeps pixel-art sharp
+                Image.NEAREST
             )
 
             frames.append(ImageTk.PhotoImage(img))
@@ -54,84 +63,88 @@ idle2 = load_animation("Idle2")
 sleep = load_animation("Sleep")
 walk = load_animation("Movement")
 
-# ================== LOGIC ==================
-def event(cycle, check, event_number, x):
+# ================== STATE MACHINE ==================
+def next_event(cycle, check, event_number):
     if event_number in idle_num:
         check = 0
-        window.after(400, update, cycle, check, event_number, x)
-
     elif event_number == 5:
         check = 1
-        window.after(100, update, cycle, check, event_number, x)
-
     elif event_number in walk_left:
         check = 4
-        window.after(100, update, cycle, check, event_number, x)
-
     elif event_number in walk_right:
         check = 5
-        window.after(100, update, cycle, check, event_number, x)
-
     elif event_number in sleep_num:
         check = 2
-        window.after(1000, update, cycle, check, event_number, x)
-
     elif event_number == 14:
         check = 3
-        window.after(100, update, cycle, check, event_number, x)
 
-def gif_work(cycle, frames, event_number, first_num, last_num):
+    window.after(FRAME_DELAY, update, cycle, check, event_number)
+
+def gif_work(cycle, frames, first_num, last_num):
     if cycle < len(frames) - 1:
         cycle += 1
     else:
         cycle = 0
-        event_number = random.randrange(first_num, last_num + 1)
-    return cycle, event_number
+        first_num, last_num = int(first_num), int(last_num)
+        new_event = random.randrange(first_num, last_num + 1)
+        return cycle, new_event
+    return cycle, None
 
-def update(cycle, check, event_number, x):
-    # Idle
+# ================== UPDATE LOOP ==================
+def update(cycle, check, event_number):
+    global x_offset
+
     if check == 0:
         frame = idle[cycle]
-        cycle, event_number = gif_work(cycle, idle, event_number, 1, 9)
+        cycle, new_event = gif_work(cycle, idle, 1, 9)
 
-    # Idle → Sleep
     elif check == 1:
         frame = idle2[cycle]
-        cycle, event_number = gif_work(cycle, idle2, event_number, 10, 10)
+        cycle, new_event = gif_work(cycle, idle2, 10, 10)
 
-    # Sleep
     elif check == 2:
         frame = sleep[cycle]
-        cycle, event_number = gif_work(cycle, sleep, event_number, 10, 15)
+        cycle, new_event = gif_work(cycle, sleep, 10, 15)
 
-    # Sleep → Idle
     elif check == 3:
         frame = idle[cycle]
-        cycle, event_number = gif_work(cycle, idle, event_number, 1, 1)
+        cycle, new_event = gif_work(cycle, idle, 1, 1)
 
-    # Walk Left
     elif check == 4:
         frame = walk[cycle]
-        cycle, event_number = gif_work(cycle, walk, event_number, 1, 9)
-        x -= 3
+        cycle, new_event = gif_work(cycle, walk, 1, 9)
+        x_offset -= 3
 
-    # Walk Right
     elif check == 5:
         frame = walk[cycle]
-        cycle, event_number = gif_work(cycle, walk, event_number, 1, 9)
-        x += 3
+        cycle, new_event = gif_work(cycle, walk, 1, 9)
+        x_offset += 3
 
+    else:
+        frame = idle[0]
+        new_event = None
+
+    # Position bottom-right
     w = frame.width()
     h = frame.height()
-    window.geometry(f"{w}x{h}+500+500")
+
+    x_pos = screen_width - w - MARGIN + x_offset
+    y_pos = screen_height - h - MARGIN - TASKBAR_OFFSET
+
+    global positioned
+
+    if not positioned:
+        window.geometry(f"{w}x{h}+{x_pos}+{y_pos}")
+        positioned = True
 
     label.configure(image=frame)
-    window.after(FRAME_DELAY, event, cycle, check, event_number, x)
+    label.image = frame
 
-# ================== WINDOW ==================
-label = tk.Label(window, bg="magenta", bd=0)
-label.pack()
-window.wm_attributes("-transparentcolor", "magenta")
+    if new_event is not None:
+        event_number = new_event
 
-window.after(100, update, cycle, check, event_number, x)
+    window.after(FRAME_DELAY, update, cycle, check, event_number)
+
+# ================== START ==================
+window.after(100, update, cycle, check, event_number)
 window.mainloop()
