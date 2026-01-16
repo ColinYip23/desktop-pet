@@ -8,7 +8,6 @@ FRAME_DELAY = 100     # ms per frame
 SCALE = 4             # sprite size multiplier
 MARGIN = 10           # distance from screen edge
 TASKBAR_OFFSET = 40   # adjust if needed (40–60 typical)
-positioned = False
 
 idle_num = [1, 2, 3, 4]
 sleep_num = [10, 11, 12, 13, 15]
@@ -18,7 +17,7 @@ walk_right = [8, 9]
 event_number = random.randrange(1, 16)
 cycle = 0
 check = 0
-x_offset = -15
+x_offset = -40
 
 SPRITE_PNG = r"C:\Users\user\Desktop\desktop-pet\Red Panda Sprite Sheet.png"
 SPRITE_JSON = r"C:\Users\user\Desktop\desktop-pet\Red Panda Sprite Sheet.json"
@@ -132,19 +131,13 @@ def update(cycle, check, event_number):
     x_pos = screen_width - w - MARGIN + x_offset
     y_pos = screen_height - h - MARGIN - TASKBAR_OFFSET
 
-    global positioned
-
-    if not positioned:
-        window.geometry(f"{w}x{h}+{x_pos}+{y_pos}")
-        positioned = True
-
+    window.geometry(f"{w}x{h}+{x_pos}+{y_pos}")
     label.configure(image=frame)
-    label.image = frame
 
     if new_event is not None:
         event_number = new_event
 
-    window.after(FRAME_DELAY, update, cycle, check, event_number)
+    window.after(FRAME_DELAY, next_event, cycle, check, event_number)
 
 # ================== START ==================
 window.after(100, update, cycle, check, event_number)
